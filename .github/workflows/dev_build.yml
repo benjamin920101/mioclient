@@ -32,3 +32,13 @@ jobs:
         with:
           name: mio
           path: ./build/libs/*.jar
+
+          
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ runner.os == 'Linux' }}
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          files: |
+            build/libs/*.jar
