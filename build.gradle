@@ -24,6 +24,27 @@ apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'com.peterabeles.gversion'
 
+// Fix DownloadAssetsTask to use HTTPS instead of HTTP
+import net.minecraftforge.gradle.tasks.DownloadAssetsTask
+import java.util.concurrent.ConcurrentHashMap
+
+afterEvaluate {
+    tasks.withType(DownloadAssetsTask).each { task ->
+        task.doFirst {
+            // Replace HTTP with HTTPS in asset index
+            def indexFile = task.assetIndex
+            if (indexFile != null) {
+                def indexContent = new File(indexFile.toString()).text
+                def modifiedContent = indexContent.replaceAll('http://resources\\.download\\.minecraft\\.net/', 'https://resources.download.minecraft.net/')
+                def tempFile = File.createTempFile('assetIndex', '.json')
+                tempFile.text = modifiedContent
+                tempFile.deleteOnExit()
+                task.assetIndex = tempFile.toURI().toURL()
+            }
+        }
+    }
+}
+
 gversion {
     srcDir = "src/main/java/"
     classPackage = "me.mioclient.api.util.git"
