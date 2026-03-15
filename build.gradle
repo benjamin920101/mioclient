@@ -71,7 +71,7 @@ dependencies {
         exclude module: 'commons-io'
     }
 
-    compile 'club.minnced:java-discord-rpc:2.0.2'
+    // compile 'club.minnced:java-discord-rpc:2.0.2' // Disabled
     //compile 'com.googlecode.json-simple:json-simple:1.1.1'
 
 }
@@ -98,7 +98,7 @@ processResources {
 
 shadowJar {
     dependencies {
-        include(dependency('club.minnced:java-discord-rpc'))
+        // include(dependency('club.minnced:java-discord-rpc')) // Disabled
         include(dependency('com.googlecode.json-simple:json-simple:1.1.1'))
         include(dependency('org.spongepowered:mixin'))
     }

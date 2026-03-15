@@ -192,7 +192,7 @@ public class ModuleManager extends Mod {
         modules.add(new FontMod());
         modules.add(new HUD());
         modules.add(new FovMod());
-        modules.add(new DiscordRPC());
+        // modules.add(new DiscordRPC()); // Disabled
         modules.add(new Desktop());
 
         //Render
