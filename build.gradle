@@ -17,6 +17,18 @@ buildscript {
         classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
         classpath 'com.peterabeles.gversion:com.peterabeles.gversion.gradle.plugin:1.5.0'
     }
+    
+    // Global fix: Force HTTPS for Minecraft assets by monkey-patching URL.openConnection
+    // This must be done in buildscript block to apply before any tasks run
+    def originalOpenConnection = URL.metaClass.getMethod('openConnection', [] as Class[])
+    URL.metaClass.openConnection = { ->
+        def urlStr = delegate.toString()
+        if (urlStr.startsWith('http://resources.download.minecraft.net/')) {
+            def httpsUrl = new URL(urlStr.replace('http://', 'https://'))
+            return httpsUrl.openConnection()
+        }
+        return originalOpenConnection.invoke(delegate)
+    }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -24,22 +36,8 @@ apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'com.peterabeles.gversion'
 
-// Fix DownloadAssetsTask to use HTTPS instead of HTTP
-import net.minecraftforge.gradle.tasks.DownloadAssetsTask
-
-gradle.taskGraph.whenReady {
-    tasks.withType(DownloadAssetsTask).each { task ->
-        // Replace HTTP with HTTPS in asset index file before task runs
-        def originalIndexFile = task.assetIndex
-        if (originalIndexFile != null) {
-            def indexContent = new File(originalIndexFile.toURI()).text
-            def modifiedContent = indexContent.replaceAll('http://resources\\.download\\.minecraft\\.net/', 'https://resources.download.minecraft.net/')
-            def tempFile = new File(task.temporaryDir, 'assetIndex-https.json')
-            tempFile.text = modifiedContent
-            task.assetIndex = tempFile.toURI().toURL()
-        }
-    }
-}
+// Fix: Enable HTTP to HTTPS redirects
+System.setProperty('http.keepAlive', 'false')
 
 gversion {
     srcDir = "src/main/java/"
